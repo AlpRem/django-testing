@@ -41,7 +41,10 @@ class TestNoteList(TestCase):
                 self.client.force_login(user)
                 response = self.client.get(reverse("notes:list"))
                 object_list = response.context["object_list"]
-                self.assertEqual(object_list.count(), self.NOTES_COUNT_ON_LIST_PAGE)
+                self.assertEqual(
+                    object_list.count(),
+                    self.NOTES_COUNT_ON_LIST_PAGE
+                )
                 for note in visible_notes:
                     self.assertIn(note, object_list)
                 for note in hidden_notes:
