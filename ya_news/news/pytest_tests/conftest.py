@@ -13,23 +13,19 @@ from news.models import News, Comment
 @pytest.fixture
 def news(db):
     return News.objects.create(
-        title='Заголовок',
-        text='Текст',
+        title="Заголовок",
+        text="Текст",
     )
 
 
 @pytest.fixture
 def author(django_user_model, db):
-    return django_user_model.objects.create(
-        username='Автор новости'
-    )
+    return django_user_model.objects.create(username="Автор новости")
 
 
 @pytest.fixture
 def reader(django_user_model, db):
-    return django_user_model.objects.create(
-        username='Просто пользователь'
-    )
+    return django_user_model.objects.create(username="Просто пользователь")
 
 
 @pytest.fixture
@@ -48,11 +44,8 @@ def reader_client(reader):
 
 @pytest.fixture
 def comment(news, author):
-    return Comment.objects.create(
-        news=news,
-        author=author,
-        text='Текст'
-    )
+    return Comment.objects.create(news=news, author=author, text="Текст")
+
 
 @pytest.fixture
 def news_list(db):
@@ -60,13 +53,14 @@ def news_list(db):
     return News.objects.bulk_create(
         [
             News(
-                title=f'Заголовок {index}',
-                text='Текст.',
+                title=f"Заголовок {index}",
+                text="Текст.",
                 date=today - timedelta(days=index),
             )
             for index in range(settings.NEWS_COUNT_ON_HOME_PAGE + 1)
         ]
     )
+
 
 @pytest.fixture
 def comments(news, author):
@@ -76,23 +70,24 @@ def comments(news, author):
         comment = Comment.objects.create(
             news=news,
             author=author,
-            text=f'Текст {index}',
+            text=f"Текст {index}",
         )
         comment.created = now + timedelta(days=index)
         comment.save()
         comments.append(comment)
     return comments
 
+
 @pytest.fixture
 def comment_url(comment):
-    return reverse('news:detail', args=(comment.news.id,))
+    return reverse("news:detail", args=(comment.news.id,))
 
 
 @pytest.fixture
 def edit_url(comment):
-    return reverse('news:edit', args=(comment.id,))
+    return reverse("news:edit", args=(comment.id,))
 
 
 @pytest.fixture
 def delete_url(comment):
-    return reverse('news:delete', args=(comment.id,))
+    return reverse("news:delete", args=(comment.id,))
