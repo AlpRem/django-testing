@@ -12,7 +12,7 @@ class TestNoteList(TestCase):
 
     @classmethod
     def create_notes(cls, author):
-        return Note.objects.bulk_create(
+        Note.objects.bulk_create(
             [
                 Note(
                     title=f"Заметка {index}",
@@ -23,6 +23,7 @@ class TestNoteList(TestCase):
                 for index in range(cls.NOTES_COUNT_ON_LIST_PAGE)
             ]
         )
+        return list(Note.objects.filter(author=author))
 
     @classmethod
     def setUpTestData(cls):
