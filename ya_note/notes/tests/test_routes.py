@@ -10,7 +10,10 @@ class TestRoutes(BaseTestCase):
     def setUpTestData(cls):
         super().setUpTestData()
         cls.note = Note.objects.create(
-            title=cls.NOTE_TITLE, text=cls.NOTE_TEXT, slug=cls.NOTE_SLUG, author=cls.author
+            title=cls.NOTE_TITLE,
+            text=cls.NOTE_TEXT,
+            slug=cls.NOTE_SLUG,
+            author=cls.author
         )
 
     def get_pages_detail_access(self):

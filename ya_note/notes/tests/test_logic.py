@@ -1,7 +1,6 @@
 from http import HTTPStatus
 
 from django.contrib.auth import get_user_model
-from django.test import Client
 from django.urls import reverse
 from notes.forms import WARNING
 from notes.models import Note
@@ -25,7 +24,9 @@ class TestNoteCreation(BaseTestCase):
         }
 
     def test_anonymous_create(self):
-        """Тест отсутствия возможности добавления заметки для неавторизованных пользователей"""
+        """Тест отсутствия возможности добавления заметки
+        для неавторизованных пользователей
+        """
         response = self.client.post(
             self.url,
             data=self.form_data,
