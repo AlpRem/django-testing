@@ -9,6 +9,7 @@ COMMENT_TEXT = "Текст комментария"
 
 
 def test_anonymous_user_cant_create_comment(client, news):
+    """Тест проверки отсутствия возможности добавления комментария у неавторизованного пользователя"""
     url = reverse("news:detail", args=(news.id,))
     form_data = {"text": COMMENT_TEXT}
     client.post(url, data=form_data)
@@ -16,6 +17,7 @@ def test_anonymous_user_cant_create_comment(client, news):
 
 
 def test_user_can_create_comment(author_client, author, news):
+    """Тест проверки возможности добавления комментария для авторизованного пользователя"""
     url = reverse("news:detail", args=(news.id,))
     form_data = {"text": COMMENT_TEXT}
     response = author_client.post(url, data=form_data)
@@ -28,6 +30,7 @@ def test_user_can_create_comment(author_client, author, news):
 
 
 def test_user_cant_use_bad_words(author_client, news):
+    """Тест блокировки стоп-слов"""
     url = reverse("news:detail", args=(news.id,))
     form_data = {"text": f"Какой-то текст {BAD_WORDS[0]} еще текст"}
     response = author_client.post(url, data=form_data)
@@ -36,6 +39,7 @@ def test_user_cant_use_bad_words(author_client, news):
 
 
 def test_author_can_delete_comment(author_client, delete_url, comment):
+    """Тест проверки удаления комментариев для автора"""
     url_to_comments = reverse(
         "news:detail",
         args=(comment.news.id,)
@@ -47,12 +51,14 @@ def test_author_can_delete_comment(author_client, delete_url, comment):
 
 
 def test_user_cant_delete_comment_of_another_user(reader_client, delete_url):
+    """Тест невозможности удаления комментариев для не автора"""
     response = reader_client.delete(delete_url)
     assert response.status_code == HTTPStatus.NOT_FOUND
     assert Comment.objects.count() == 1
 
 
 def test_author_can_edit_comment(author_client, edit_url, comment):
+    """Тест проверки редактирования для автора"""
     new_text = "Текст 2"
     response = author_client.post(edit_url, data={"text": new_text})
     url_to_comments = reverse(
@@ -67,6 +73,7 @@ def test_author_can_edit_comment(author_client, edit_url, comment):
 def test_user_cant_edit_comment_of_another_user(
         reader_client, edit_url,
         comment):
+    """Тест невозможности редактирования комментариев для не авторов"""
     response = reader_client.post(
         edit_url,
         data={"text": "Текст 2"}

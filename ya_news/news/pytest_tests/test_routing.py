@@ -6,12 +6,14 @@ from pytest_django.asserts import assertRedirects
 
 
 def test_home_page(client, news):
+    """Тест адресации домашний страницы"""
     url = reverse("news:home")
     response = client.get(url)
     assert response.status_code == HTTPStatus.OK
 
 
 def test_detail_page(client, news):
+    """Тест адресации детализации новости"""
     url = reverse("news:detail", args=(news.id,))
     response = client.get(url)
     assert response.status_code == HTTPStatus.OK
@@ -38,6 +40,7 @@ def test_availability_for_comment_edit_and_delete(
     name,
     comment,
 ):
+    """Тест адресации удаления и редактирования комментария"""
     test_client = request.getfixturevalue(client_fixture)
     url = reverse(name, args=(comment.id,))
     response = test_client.get(url)
@@ -56,6 +59,7 @@ def test_redirect_for_anonymous_client(
     comment,
     name,
 ):
+    """Тест редеректа для анонимного пользователя"""
     login_url = reverse("users:login")
     url = reverse(name, args=(comment.id,))
     redirect_url = f"{login_url}?next={url}"
@@ -71,12 +75,14 @@ def test_redirect_for_anonymous_client(
     ],
 )
 def test_auth_pages(client, name):
+    """Тест адресации авторизации"""
     url = reverse(name)
     response = client.get(url)
     assert response.status_code == HTTPStatus.OK
 
 
 def test_logout_page(client):
+    """Тест адресации разлогирования"""
     url = reverse("users:logout")
     response = client.post(url)
     assert response.status_code == HTTPStatus.OK

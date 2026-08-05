@@ -33,6 +33,7 @@ class TestNoteList(TestCase):
         cls.reader_notes = cls.create_notes(cls.reader)
 
     def test_notes_access(self):
+        """Тест доступности только своих заметок"""
         users_notes = (
             (self.author, self.author_notes, self.reader_notes),
             (self.reader, self.reader_notes, self.author_notes),
@@ -66,6 +67,7 @@ class TestNotePages(TestCase):
         )
 
     def test_pages_have_form(self):
+        """Тест проверки наличия формы на редактирование и удаление"""
         self.client.force_login(self.author)
         pages = (
             reverse("notes:add"),

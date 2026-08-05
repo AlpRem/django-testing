@@ -24,6 +24,7 @@ class TestNoteCreation(TestCase):
         }
 
     def test_anonymous_create(self):
+        """Тест отсутствия возможности добавления заметки для неавторизованных пользователей"""
         response = self.client.post(
             self.url,
             data=self.form_data,
@@ -35,6 +36,7 @@ class TestNoteCreation(TestCase):
         assert Note.objects.count() == 0
 
     def test_user_create(self):
+        """Тести добавления заметки для авторизованных пользователей"""
         response = self.auth_client.post(
             self.url,
             data=self.form_data,
@@ -52,6 +54,7 @@ class TestNoteCreation(TestCase):
         assert note.author == self.user
 
     def test_duplicate_slug(self):
+        """Тест отсутствия возможности добавления с уже существующим slug."""
         Note.objects.create(
             title="Заметка 1",
             text="Текст",
@@ -70,6 +73,7 @@ class TestNoteCreation(TestCase):
         self.assertEqual(Note.objects.count(), 1)
 
     def test_empty_slug(self):
+        """Тест генерации slug при пустом slug"""
         form_data = self.form_data.copy()
         form_data.pop("slug")
         response = self.auth_client.post(
@@ -117,6 +121,7 @@ class TestNoteEditDelete(TestCase):
         }
 
     def test_author_delete(self):
+        """Тест удаления заметки автором"""
         response = self.author_client.post(self.delete_url)
         self.assertRedirects(
             response,
@@ -128,6 +133,7 @@ class TestNoteEditDelete(TestCase):
         )
 
     def test_author_edi(self):
+        """Тест редактирования заметки автором"""
         response = self.author_client.post(
             self.edit_url,
             data=self.form_data,
@@ -147,6 +153,7 @@ class TestNoteEditDelete(TestCase):
         )
 
     def test_user_delete(self):
+        """Тест невозможности удаления заметки не автором"""
         response = self.reader_client.post(self.delete_url)
         self.assertEqual(
             response.status_code,
@@ -158,6 +165,7 @@ class TestNoteEditDelete(TestCase):
         )
 
     def test_user_note(self):
+        """Тест невозможности удаления заметки автором"""
         response = self.reader_client.post(
             self.edit_url,
             data=self.form_data,
