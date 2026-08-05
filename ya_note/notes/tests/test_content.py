@@ -1,13 +1,11 @@
 from django.contrib.auth import get_user_model
-from django.test import TestCase
 from django.urls import reverse
 from notes.forms import NoteForm
 from notes.models import Note
+from notes.tests.common import BaseTestCase
 
-User = get_user_model()
 
-
-class TestNoteList(TestCase):
+class TestNoteList(BaseTestCase):
     NOTES_COUNT_ON_LIST_PAGE = 10
 
     @classmethod
@@ -27,21 +25,19 @@ class TestNoteList(TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        cls.author = User.objects.create(username="Автор заметки")
-        cls.reader = User.objects.create(username="Просто пользователь")
+        super().setUpTestData()
         cls.author_notes = cls.create_notes(cls.author)
         cls.reader_notes = cls.create_notes(cls.reader)
 
     def test_notes_access(self):
         """Тест доступности только своих заметок"""
         users_notes = (
-            (self.author, self.author_notes, self.reader_notes),
-            (self.reader, self.reader_notes, self.author_notes),
+            (self.author_client, self.author_notes, self.reader_notes),
+            (self.reader_client, self.reader_notes, self.author_notes),
         )
         for user, visible_notes, hidden_notes in users_notes:
             with self.subTest(user=user):
-                self.client.force_login(user)
-                response = self.client.get(reverse("notes:list"))
+                response = user.get(reverse("notes:list"))
                 object_list = response.context["object_list"]
                 self.assertEqual(
                     object_list.count(),
@@ -53,12 +49,11 @@ class TestNoteList(TestCase):
                     self.assertNotIn(note, object_list)
 
 
-class TestNotePages(TestCase):
+class TestNotePages(BaseTestCase):
 
     @classmethod
     def setUpTestData(cls):
-        cls.author = User.objects.create(username="Автор заметки")
-
+        super().setUpTestData()
         cls.note = Note.objects.create(
             title="Заголовок",
             text="Текст",
@@ -68,15 +63,13 @@ class TestNotePages(TestCase):
 
     def test_pages_have_form(self):
         """Тест проверки наличия формы на редактирование и удаление"""
-        self.client.force_login(self.author)
         pages = (
             reverse("notes:add"),
             reverse("notes:edit", args=(self.note.slug,)),
         )
         for url in pages:
             with self.subTest(url=url):
-                response = self.client.get(url)
-
+                response = self.author_client.get(url)
                 self.assertIn("form", response.context)
                 self.assertIsInstance(
                     response.context["form"],

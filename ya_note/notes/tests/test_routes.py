@@ -4,11 +4,10 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
 from notes.models import Note
+from notes.tests.common import BaseTestCase
 
-User = get_user_model()
 
-
-class TestRoutes(TestCase):
+class TestRoutes(BaseTestCase):
     PAGES_ARGS = (
         "notes:add",
         "notes:list",
@@ -23,8 +22,7 @@ class TestRoutes(TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        cls.author = User.objects.create(username="Автор заметки")
-        cls.reader = User.objects.create(username="Просто пользователь")
+        super().setUpTestData()
         cls.note = Note.objects.create(
             title="Заголовок", text="Текст", slug="slug", author=cls.author
         )
@@ -34,24 +32,22 @@ class TestRoutes(TestCase):
         assert response.status_code == HTTPStatus.OK
 
     def test_authenticated_user_has_access(self):
-        self.client.force_login(self.author)
         for name in self.PAGES_ARGS:
             with self.subTest(page=name):
-                response = self.client.get(reverse(name))
+                response = self.author_client.get(reverse(name))
                 self.assertEqual(response.status_code, HTTPStatus.OK)
         for name in self.PAGES_SLUG:
             with self.subTest(page=name):
-                response = self.client.get(
+                response = self.author_client.get(
                     reverse(name,
                             args=(self.note.slug,))
                 )
                 assert response.status_code == HTTPStatus.OK
 
     def test_note_pages_unavailable_for_non_author(self):
-        self.client.force_login(self.reader)
         for name in self.PAGES_SLUG:
             with self.subTest(page=name):
-                response = self.client.get(reverse(
+                response = self.reader_client.get(reverse(
                     name,
                     args=(self.note.slug,))
                 )

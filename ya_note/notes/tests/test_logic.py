@@ -1,21 +1,20 @@
 from django.contrib.auth import get_user_model
-from django.test import Client, TestCase
+from django.test import Client
 from django.urls import reverse
 from notes.forms import WARNING
 from notes.models import Note
 from pytils.translit import slugify
+from notes.tests.common import BaseTestCase
 
 User = get_user_model()
 
 
-class TestNoteCreation(TestCase):
+class TestNoteCreation(BaseTestCase):
     NOTE_TEXT = "Просто текст"
 
     @classmethod
     def setUpTestData(cls):
-        cls.user = User.objects.create(username="Автор заметки")
-        cls.auth_client = Client()
-        cls.auth_client.force_login(cls.user)
+        super().setUpTestData()
         cls.url = reverse("notes:add")
         cls.form_data = {
             "title": "Заметка 1",
@@ -37,7 +36,7 @@ class TestNoteCreation(TestCase):
 
     def test_user_create(self):
         """Тести добавления заметки для авторизованных пользователей"""
-        response = self.auth_client.post(
+        response = self.author_client.post(
             self.url,
             data=self.form_data,
         )
@@ -51,7 +50,7 @@ class TestNoteCreation(TestCase):
         assert note.title == "Заметка 1"
         assert note.text == self.NOTE_TEXT
         assert note.slug == "slug"
-        assert note.author == self.user
+        assert note.author == self.author
 
     def test_duplicate_slug(self):
         """Тест отсутствия возможности добавления с уже существующим slug."""
@@ -59,9 +58,9 @@ class TestNoteCreation(TestCase):
             title="Заметка 1",
             text="Текст",
             slug="slug",
-            author=self.user,
+            author=self.author,
         )
-        response = self.auth_client.post(
+        response = self.author_client.post(
             self.url,
             data=self.form_data,
         )
@@ -76,7 +75,7 @@ class TestNoteCreation(TestCase):
         """Тест генерации slug при пустом slug"""
         form_data = self.form_data.copy()
         form_data.pop("slug")
-        response = self.auth_client.post(
+        response = self.author_client.post(
             self.url,
             data=form_data,
         )
@@ -86,19 +85,13 @@ class TestNoteCreation(TestCase):
         self.assertEqual(note.slug, slugify(form_data["title"]))
 
 
-class TestNoteEditDelete(TestCase):
+class TestNoteEditDelete(BaseTestCase):
     NEW_TITLE = "Заголовок 2"
     NEW_TEXT = "Текст 2"
 
     @classmethod
     def setUpTestData(cls):
-        cls.author = User.objects.create(username="Автор заметки")
-        cls.reader = User.objects.create(username="Другой пользователь")
-
-        cls.author_client = Client()
-        cls.reader_client = Client()
-        cls.author_client.force_login(cls.author)
-        cls.reader_client.force_login(cls.reader)
+        super().setUpTestData()
 
         cls.note = Note.objects.create(
             title="Заголовок",
@@ -106,6 +99,7 @@ class TestNoteEditDelete(TestCase):
             slug="test-slug",
             author=cls.author,
         )
+
         cls.edit_url = reverse(
             "notes:edit",
             args=(cls.note.slug,),
