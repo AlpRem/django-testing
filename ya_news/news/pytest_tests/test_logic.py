@@ -8,20 +8,18 @@ from pytest_django.asserts import assertFormError, assertRedirects
 COMMENT_TEXT = "Текст комментария"
 
 
-def test_anonymous_user_cant_create_comment(client, news):
+def test_anonymous_user_cant_create_comment(client, news, detail):
     """Тест проверки отсутствия возможности добавления комментария у неавторизованного пользователя"""
-    url = reverse("news:detail", args=(news.id,))
     form_data = {"text": COMMENT_TEXT}
-    client.post(url, data=form_data)
+    client.post(detail, data=form_data)
     assert Comment.objects.count() == 0
 
 
-def test_user_can_create_comment(author_client, author, news):
+def test_user_can_create_comment(author_client, author, news, detail):
     """Тест проверки возможности добавления комментария для авторизованного пользователя"""
-    url = reverse("news:detail", args=(news.id,))
     form_data = {"text": COMMENT_TEXT}
-    response = author_client.post(url, data=form_data)
-    assertRedirects(response, f"{url}#comments")
+    response = author_client.post(detail, data=form_data)
+    assertRedirects(response, f"{detail}#comments")
     assert Comment.objects.count() == 1
     comment = Comment.objects.get()
     assert comment.text == COMMENT_TEXT
@@ -29,23 +27,18 @@ def test_user_can_create_comment(author_client, author, news):
     assert comment.author == author
 
 
-def test_user_cant_use_bad_words(author_client, news):
+def test_user_cant_use_bad_words(author_client, news, detail):
     """Тест блокировки стоп-слов"""
-    url = reverse("news:detail", args=(news.id,))
     form_data = {"text": f"Какой-то текст {BAD_WORDS[0]} еще текст"}
-    response = author_client.post(url, data=form_data)
+    response = author_client.post(detail, data=form_data)
     assertFormError(response.context["form"], "text", WARNING)
     assert Comment.objects.count() == 0
 
 
-def test_author_can_delete_comment(author_client, delete_url, comment):
+def test_author_can_delete_comment(author_client, delete_url, comment, detail):
     """Тест проверки удаления комментариев для автора"""
-    url_to_comments = reverse(
-        "news:detail",
-        args=(comment.news.id,)
-    ) + "#comments"
     response = author_client.delete(delete_url)
-    assertRedirects(response, url_to_comments)
+    assertRedirects(response, f"{detail}#comments")
     assert response.status_code == HTTPStatus.FOUND
     assert Comment.objects.count() == 0
 
@@ -57,15 +50,11 @@ def test_user_cant_delete_comment_of_another_user(reader_client, delete_url):
     assert Comment.objects.count() == 1
 
 
-def test_author_can_edit_comment(author_client, edit_url, comment):
+def test_author_can_edit_comment(author_client, edit_url, comment, detail):
     """Тест проверки редактирования для автора"""
     new_text = "Текст 2"
     response = author_client.post(edit_url, data={"text": new_text})
-    url_to_comments = reverse(
-        "news:detail",
-        args=(comment.news.id,)
-    ) + "#comments"
-    assertRedirects(response, url_to_comments)
+    assertRedirects(response, f"{detail}#comments")
     comment.refresh_from_db()
     assert comment.text == new_text
 

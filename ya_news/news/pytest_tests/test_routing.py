@@ -5,17 +5,15 @@ from django.urls import reverse
 from pytest_django.asserts import assertRedirects
 
 
-def test_home_page(client, news):
+def test_home_page(client, news, home):
     """Тест адресации домашний страницы"""
-    url = reverse("news:home")
-    response = client.get(url)
+    response = client.get(home)
     assert response.status_code == HTTPStatus.OK
 
 
-def test_detail_page(client, news):
+def test_detail_page(client, news, detail):
     """Тест адресации детализации новости"""
-    url = reverse("news:detail", args=(news.id,))
-    response = client.get(url)
+    response = client.get(detail)
     assert response.status_code == HTTPStatus.OK
 
 
@@ -81,8 +79,7 @@ def test_auth_pages(client, name):
     assert response.status_code == HTTPStatus.OK
 
 
-def test_logout_page(client):
+def test_logout_page(client, logout):
     """Тест адресации разлогирования"""
-    url = reverse("users:logout")
-    response = client.post(url)
+    response = client.post(logout)
     assert response.status_code == HTTPStatus.OK
