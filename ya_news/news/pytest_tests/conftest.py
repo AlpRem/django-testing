@@ -1,13 +1,11 @@
 from datetime import timedelta
+
 import pytest
-
-from django.test.client import Client
-
 from django.conf import settings
+from django.test.client import Client
 from django.urls import reverse
 from django.utils import timezone
-
-from news.models import News, Comment
+from news.models import Comment, News
 
 
 @pytest.fixture
