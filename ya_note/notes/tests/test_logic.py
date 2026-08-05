@@ -1,3 +1,5 @@
+from http import HTTPStatus
+
 from django.contrib.auth import get_user_model
 from django.test import Client
 from django.urls import reverse
@@ -151,7 +153,7 @@ class TestNoteEditDelete(BaseTestCase):
         response = self.reader_client.post(self.delete_url)
         self.assertEqual(
             response.status_code,
-            404,
+            HTTPStatus.NOT_FOUND,
         )
         self.assertEqual(
             Note.objects.count(),
@@ -166,7 +168,7 @@ class TestNoteEditDelete(BaseTestCase):
         )
         self.assertEqual(
             response.status_code,
-            404,
+            HTTPStatus.NOT_FOUND,
         )
         self.note.refresh_from_db()
         self.assertEqual(
