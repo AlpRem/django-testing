@@ -29,24 +29,29 @@ class TestNoteList(BaseTestCase):
         cls.author_notes = cls.create_notes(cls.author)
         cls.reader_notes = cls.create_notes(cls.reader)
 
-    def test_notes_access(self):
-        """Тест доступности только своих заметок"""
-        users_notes = (
-            (self.author_client, self.author_notes, self.reader_notes),
-            (self.reader_client, self.reader_notes, self.author_notes),
+    def test_access_author_notes(self):
+        response = self.author_client.get(reverse("notes:list"))
+        object_list = response.context["object_list"]
+        self.assertEqual(
+            object_list.count(),
+            self.NOTES_COUNT_ON_LIST_PAGE
         )
-        for user, visible_notes, hidden_notes in users_notes:
-            with self.subTest(user=user):
-                response = user.get(reverse("notes:list"))
-                object_list = response.context["object_list"]
-                self.assertEqual(
-                    object_list.count(),
-                    self.NOTES_COUNT_ON_LIST_PAGE
-                )
-                for note in visible_notes:
-                    self.assertIn(note, object_list)
-                for note in hidden_notes:
-                    self.assertNotIn(note, object_list)
+        for note in self.author_notes:
+            self.assertIn(note, object_list)
+        for note in self.reader_notes:
+            self.assertNotIn(note, object_list)
+
+    def test_not_access_reader_notes(self):
+        response = self.reader_client.get(reverse("notes:list"))
+        object_list = response.context["object_list"]
+        self.assertEqual(
+            object_list.count(),
+            self.NOTES_COUNT_ON_LIST_PAGE
+        )
+        for note in self.reader_notes:
+            self.assertIn(note, object_list)
+        for note in self.author_notes:
+            self.assertNotIn(note, object_list)
 
 
 class TestNotePages(BaseTestCase):
