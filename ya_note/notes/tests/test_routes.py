@@ -10,10 +10,59 @@ class TestRoutes(BaseTestCase):
     def setUpTestData(cls):
         super().setUpTestData()
         cls.note = Note.objects.create(
-            title="Заголовок", text="Текст", slug="slug", author=cls.author
+            title=cls.NOTE_TITLE, text=cls.NOTE_TEXT, slug=cls.NOTE_SLUG, author=cls.author
         )
 
-    def get_all_pages(self):
+    def get_pages_detail_access(self):
+        return (
+            (
+                self.author_client,
+                reverse("notes:add"),
+                HTTPStatus.OK,
+            ),
+            (
+                self.author_client,
+                reverse("notes:list"),
+                HTTPStatus.OK,
+            ),
+            (
+                self.author_client,
+                reverse("notes:success"),
+                HTTPStatus.OK,
+            ),
+            (
+                self.author_client,
+                reverse("notes:detail", args=(self.note.slug,)),
+                HTTPStatus.OK,
+            ),
+            (
+                self.author_client,
+                reverse("notes:edit", args=(self.note.slug,)),
+                HTTPStatus.OK,
+            ),
+            (
+                self.author_client,
+                reverse("notes:delete", args=(self.note.slug,)),
+                HTTPStatus.OK,
+            ),
+            (
+                self.reader_client,
+                reverse("notes:detail", args=(self.note.slug,)),
+                HTTPStatus.NOT_FOUND,
+            ),
+            (
+                self.reader_client,
+                reverse("notes:edit", args=(self.note.slug,)),
+                HTTPStatus.NOT_FOUND,
+            ),
+            (
+                self.reader_client,
+                reverse("notes:delete", args=(self.note.slug,)),
+                HTTPStatus.NOT_FOUND,
+            ),
+        )
+
+    def get_not_user_pages(self):
         return (
             reverse("notes:add"),
             reverse("notes:list"),
@@ -23,38 +72,22 @@ class TestRoutes(BaseTestCase):
             reverse("notes:delete", args=(self.note.slug,)),
         )
 
-    def get_private_pages(self):
-        return (
-            reverse("notes:detail", args=(self.note.slug,)),
-            reverse("notes:edit", args=(self.note.slug,)),
-            reverse("notes:delete", args=(self.note.slug,)),
-        )
-
     def test_home_page(self):
         response = self.client.get(reverse("notes:home"))
         assert response.status_code == HTTPStatus.OK
 
-    def test_authenticated_user_has_access(self):
-        for url in self.get_all_pages():
+    def test_pages_status(self):
+        for client, url, expected_status in self.get_pages_detail_access():
             with self.subTest(url=url):
-                response = self.author_client.get(url)
+                response = client.get(url)
                 self.assertEqual(
                     response.status_code,
-                    HTTPStatus.OK,
-                )
-
-    def test_note_pages_unavailable_for_non_author(self):
-        for url in self.get_private_pages():
-            with self.subTest(url=url):
-                response = self.reader_client.get(url)
-                self.assertEqual(
-                    response.status_code,
-                    HTTPStatus.NOT_FOUND,
+                    expected_status,
                 )
 
     def test_redirect_anonymous_user(self):
         login_url = reverse("users:login")
-        for url in self.get_all_pages():
+        for url in self.get_not_user_pages():
             with self.subTest(url=url):
                 response = self.client.get(url)
                 redirect_url = f"{login_url}?next={url}"
