@@ -90,6 +90,7 @@ def edit_url(comment):
 def delete_url(comment):
     return reverse("news:delete", args=(comment.id,))
 
+
 @pytest.fixture
 def home():
     return reverse("news:home")
@@ -98,6 +99,7 @@ def home():
 @pytest.fixture
 def detail(news):
     return reverse("news:detail", args=(news.id,))
+
 
 @pytest.fixture
 def logout():

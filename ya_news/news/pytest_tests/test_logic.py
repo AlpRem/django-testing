@@ -8,7 +8,9 @@ COMMENT_TEXT = "Текст комментария"
 
 
 def test_anonymous_user_cant_create_comment(client, news, detail):
-    """Тест проверки отсутствия возможности добавления комментария у неавторизованного пользователя"""
+    """Тест проверки отсутствия возможности добавления
+    комментария у неавторизованного пользователя
+    """
     form_data = {"text": COMMENT_TEXT}
 
     client.post(detail, data=form_data)
@@ -17,7 +19,9 @@ def test_anonymous_user_cant_create_comment(client, news, detail):
 
 
 def test_user_can_create_comment(author_client, author, news, detail):
-    """Тест проверки возможности добавления комментария для авторизованного пользователя"""
+    """Тест проверки возможности добавления
+    комментария для авторизованного пользователя
+    """
     form_data = {"text": COMMENT_TEXT}
 
     response = author_client.post(detail, data=form_data)
