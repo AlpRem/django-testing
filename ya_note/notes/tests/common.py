@@ -5,6 +5,9 @@ User = get_user_model()
 
 
 class BaseTestCase(TestCase):
+    NOTE_TITLE = "Заметка 1"
+    NOTE_TEXT = "Просто текст"
+    NOTE_SLUG = "slug"
 
     @classmethod
     def setUpTestData(cls):

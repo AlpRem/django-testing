@@ -13,9 +13,9 @@ class TestNoteList(BaseTestCase):
         Note.objects.bulk_create(
             [
                 Note(
-                    title=f"Заметка {index}",
-                    text="Просто текст.",
-                    slug=f"slug-{author.pk}-{index}",
+                    title=f"{cls.NOTE_TITLE} {index}",
+                    text=cls.NOTE_TEXT,
+                    slug=f"{cls.NOTE_SLUG}-{author.pk}-{index}",
                     author=author,
                 )
                 for index in range(cls.NOTES_COUNT_ON_LIST_PAGE)
@@ -60,9 +60,9 @@ class TestNotePages(BaseTestCase):
     def setUpTestData(cls):
         super().setUpTestData()
         cls.note = Note.objects.create(
-            title="Заголовок",
-            text="Текст",
-            slug="test-slug",
+            title=cls.NOTE_TITLE,
+            text=cls.NOTE_TEXT,
+            slug=cls.NOTE_SLUG,
             author=cls.author,
         )
 
