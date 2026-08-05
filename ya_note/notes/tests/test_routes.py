@@ -1,25 +1,11 @@
 from http import HTTPStatus
 
-from django.contrib.auth import get_user_model
-from django.test import TestCase
 from django.urls import reverse
 from notes.models import Note
 from notes.tests.common import BaseTestCase
 
 
 class TestRoutes(BaseTestCase):
-    PAGES_ARGS = (
-        "notes:add",
-        "notes:list",
-        "notes:success",
-    )
-
-    PAGES_SLUG = (
-        "notes:detail",
-        "notes:edit",
-        "notes:delete",
-    )
-
     @classmethod
     def setUpTestData(cls):
         super().setUpTestData()
@@ -27,45 +13,51 @@ class TestRoutes(BaseTestCase):
             title="Заголовок", text="Текст", slug="slug", author=cls.author
         )
 
+    def get_all_pages(self):
+        return (
+            reverse("notes:add"),
+            reverse("notes:list"),
+            reverse("notes:success"),
+            reverse("notes:detail", args=(self.note.slug,)),
+            reverse("notes:edit", args=(self.note.slug,)),
+            reverse("notes:delete", args=(self.note.slug,)),
+        )
+
+    def get_private_pages(self):
+        return (
+            reverse("notes:detail", args=(self.note.slug,)),
+            reverse("notes:edit", args=(self.note.slug,)),
+            reverse("notes:delete", args=(self.note.slug,)),
+        )
+
     def test_home_page(self):
         response = self.client.get(reverse("notes:home"))
         assert response.status_code == HTTPStatus.OK
 
     def test_authenticated_user_has_access(self):
-        for name in self.PAGES_ARGS:
-            with self.subTest(page=name):
-                response = self.author_client.get(reverse(name))
-                self.assertEqual(response.status_code, HTTPStatus.OK)
-        for name in self.PAGES_SLUG:
-            with self.subTest(page=name):
-                response = self.author_client.get(
-                    reverse(name,
-                            args=(self.note.slug,))
+        for url in self.get_all_pages():
+            with self.subTest(url=url):
+                response = self.author_client.get(url)
+                self.assertEqual(
+                    response.status_code,
+                    HTTPStatus.OK,
                 )
-                assert response.status_code == HTTPStatus.OK
 
     def test_note_pages_unavailable_for_non_author(self):
-        for name in self.PAGES_SLUG:
-            with self.subTest(page=name):
-                response = self.reader_client.get(reverse(
-                    name,
-                    args=(self.note.slug,))
+        for url in self.get_private_pages():
+            with self.subTest(url=url):
+                response = self.reader_client.get(url)
+                self.assertEqual(
+                    response.status_code,
+                    HTTPStatus.NOT_FOUND,
                 )
-                assert response.status_code == HTTPStatus.NOT_FOUND
 
     def test_redirect_anonymous_user(self):
         login_url = reverse("users:login")
-        for name in self.PAGES_ARGS:
-            with self.subTest(page=name):
-                url = reverse(name)
-                redirect_url = f"{login_url}?next={url}"
+        for url in self.get_all_pages():
+            with self.subTest(url=url):
                 response = self.client.get(url)
-                self.assertRedirects(response, redirect_url)
-        for name in self.PAGES_SLUG:
-            with self.subTest(page=name):
-                url = reverse(name, args=(self.note.slug,))
                 redirect_url = f"{login_url}?next={url}"
-                response = self.client.get(url)
                 self.assertRedirects(response, redirect_url)
 
     def test_users_pages_available(self):
