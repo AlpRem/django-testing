@@ -30,8 +30,14 @@ class TestNoteList(BaseTestCase):
         cls.reader_notes = cls.create_notes(cls.reader)
 
     def test_access_author_notes(self):
-        response = self.author_client.get(reverse("notes:list"))
+        """Автор видит только свои заметки на странице списка."""
+        # Arrange - данные уже подготовлены в setUpTestData
+        url = reverse("notes:list")
 
+        # Act
+        response = self.author_client.get(url)
+
+        # Assert
         self.assertQuerySetEqual(
             response.context["object_list"].order_by("pk"),
             self.author_notes,
@@ -39,8 +45,14 @@ class TestNoteList(BaseTestCase):
         )
 
     def test_not_access_reader_notes(self):
-        response = self.reader_client.get(reverse("notes:list"))
+        """Читатель видит только свои заметки на странице списка."""
+        # Arrange - данные уже подготовлены в setUpTestData
+        url = reverse("notes:list")
 
+        # Act
+        response = self.reader_client.get(url)
+
+        # Assert
         self.assertQuerySetEqual(
             response.context["object_list"].order_by("pk"),
             self.reader_notes,
@@ -61,11 +73,14 @@ class TestNotePages(BaseTestCase):
         )
 
     def test_pages_have_form(self):
-        """Тест проверки наличия формы на редактирование и удаление"""
+        """Форма для создания и редактирования заметки доступна автору."""
+        # Arrange
         pages = (
             reverse("notes:add"),
             reverse("notes:edit", args=(self.note.slug,)),
         )
+
+        # Act & Assert
         for url in pages:
             with self.subTest(url=url):
                 response = self.author_client.get(url)

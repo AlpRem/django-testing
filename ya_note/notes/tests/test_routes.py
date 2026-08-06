@@ -77,10 +77,21 @@ class TestRoutes(BaseTestCase):
         )
 
     def test_home_page(self):
-        response = self.client.get(reverse("notes:home"))
+        """Главная страница доступна для всех пользователей."""
+        # Arrange - URL уже подготовлен
+        url = reverse("notes:home")
+
+        # Act
+        response = self.client.get(url)
+
+        # Assert
         assert response.status_code == HTTPStatus.OK
 
     def test_pages_status(self):
+        """Страницы заметок доступны в зависимости от прав пользователя."""
+        # Arrange - данные уже подготовлены в get_pages_detail_access
+
+        # Act & Assert
         for client, url, expected_status in self.get_pages_detail_access():
             with self.subTest(url=url):
                 response = client.get(url)
@@ -90,7 +101,11 @@ class TestRoutes(BaseTestCase):
                 )
 
     def test_redirect_anonymous_user(self):
+        """Анонимный пользователь перенаправляется на страницу входа."""
+        # Arrange
         login_url = reverse("users:login")
+
+        # Act & Assert
         for url in self.get_not_user_pages():
             with self.subTest(url=url):
                 response = self.client.get(url)
@@ -98,15 +113,27 @@ class TestRoutes(BaseTestCase):
                 self.assertRedirects(response, redirect_url)
 
     def test_users_pages_available(self):
+        """Страницы входа и регистрации доступны для всех пользователей."""
+        # Arrange
         pages = (
             "users:login",
             "users:signup",
         )
+
+        # Act & Assert
         for name in pages:
             with self.subTest(page=name):
-                response = self.client.get(reverse(name))
+                url = reverse(name)
+                response = self.client.get(url)
                 self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_logout_available(self):
-        response = self.client.post(reverse("users:logout"))
+        """Страница выхода доступна для всех пользователей."""
+        # Arrange
+        url = reverse("users:logout")
+
+        # Act
+        response = self.client.post(url)
+
+        # Assert
         self.assertEqual(response.status_code, HTTPStatus.OK)

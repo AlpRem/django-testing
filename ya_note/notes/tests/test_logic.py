@@ -25,29 +25,33 @@ class TestNoteCreation(BaseTestCase):
         }
 
     def test_anonymous_create(self):
-        """Тест отсутствия возможности добавления заметки
-        для неавторизованных пользователей
-        """
+        """Неавторизованный пользователь не может создать заметку."""
+        login_url = reverse("users:login")
+        expected_url = f"{login_url}?next={self.url}"
+
+        # Act
         response = self.client.post(
             self.url,
             data=self.form_data,
         )
 
-        login_url = reverse("users:login")
-        expected_url = f"{login_url}?next={self.url}"
+        # Assert
         self.assertRedirects(response, expected_url)
         assert Note.objects.count() == 0
 
     def test_user_create(self):
-        """Тести добавления заметки для авторизованных пользователей"""
+        """Авторизованный пользователь может создать заметку."""
+        # Arrange - данные уже подготовлены в setUpTestData
+        success_url = reverse("notes:success")
+
+        # Act
         response = self.author_client.post(
             self.url,
             data=self.form_data,
         )
-        self.assertRedirects(
-            response,
-            reverse("notes:success"),
-        )
+
+        # Assert
+        self.assertRedirects(response, success_url)
         notes_count = Note.objects.count()
         assert notes_count == 1
         note = Note.objects.get()
@@ -57,18 +61,22 @@ class TestNoteCreation(BaseTestCase):
         self.assertEqual(note.author, self.author)
 
     def test_duplicate_slug(self):
-        """Тест отсутствия возможности добавления с уже существующим slug."""
+        """Заметка с уже существующим slug не создается."""
+        # Arrange
         Note.objects.create(
             title=self.NOTE_TITLE,
             text=self.NOTE_TEXT,
             slug=self.NOTE_SLUG,
             author=self.author,
         )
+
+        # Act
         response = self.author_client.post(
             self.url,
             data=self.form_data,
         )
 
+        # Assert
         self.assertFormError(
             response.context["form"],
             "slug", errors="slug" + WARNING
@@ -76,15 +84,20 @@ class TestNoteCreation(BaseTestCase):
         self.assertEqual(Note.objects.count(), 1)
 
     def test_empty_slug(self):
-        """Тест генерации slug при пустом slug"""
+        """При пустом slug генерируется автоматически."""
+        # Arrange
         form_data = self.form_data.copy()
         form_data.pop("slug")
+        success_url = reverse("notes:success")
+
+        # Act
         response = self.author_client.post(
             self.url,
             data=form_data,
         )
 
-        self.assertRedirects(response, reverse("notes:success"))
+        # Assert
+        self.assertRedirects(response, success_url)
         note = Note.objects.get()
         self.assertEqual(note.slug, slugify(form_data["title"]))
 
@@ -119,65 +132,57 @@ class TestNoteEditDelete(BaseTestCase):
         }
 
     def test_author_delete(self):
-        """Тест удаления заметки автором"""
-        response = self.author_client.post(self.delete_url)
-        self.assertRedirects(
-            response,
-            reverse("notes:success"),
-        )
-        self.assertEqual(
-            Note.objects.count(),
-            0,
-        )
+        """Автор может удалить свою заметку."""
+        # Arrange - данные уже подготовлены в setUpTestData
+        success_url = reverse("notes:success")
 
-    def test_author_edi(self):
-        """Тест редактирования заметки автором"""
+        # Act
+        response = self.author_client.post(self.delete_url)
+
+        # Assert
+        self.assertRedirects(response, success_url)
+        self.assertEqual(Note.objects.count(), 0)
+
+    def test_author_edit(self):
+        """Автор может редактировать свою заметку."""
+        # Arrange - данные уже подготовлены в setUpTestData
+        success_url = reverse("notes:success")
+
+        # Act
         response = self.author_client.post(
             self.edit_url,
             data=self.form_data,
         )
-        self.assertRedirects(
-            response,
-            reverse("notes:success"),
-        )
+
+        # Assert
+        self.assertRedirects(response, success_url)
         self.note.refresh_from_db()
-        self.assertEqual(
-            self.note.title,
-            self.NEW_TITLE,
-        )
-        self.assertEqual(
-            self.note.text,
-            self.NEW_TEXT,
-        )
+        self.assertEqual(self.note.title, self.NEW_TITLE)
+        self.assertEqual(self.note.text, self.NEW_TEXT)
 
     def test_user_delete(self):
-        """Тест невозможности удаления заметки не автором"""
+        """Пользователь не может удалить чужую заметку."""
+        # Arrange - данные уже подготовлены в setUpTestData
+
+        # Act
         response = self.reader_client.post(self.delete_url)
-        self.assertEqual(
-            response.status_code,
-            HTTPStatus.NOT_FOUND,
-        )
-        self.assertEqual(
-            Note.objects.count(),
-            1,
-        )
+
+        # Assert
+        self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
+        self.assertEqual(Note.objects.count(), 1)
 
     def test_user_note(self):
-        """Тест невозможности редактирование заметки не автором"""
+        """Пользователь не может редактировать чужую заметку."""
+        # Arrange - данные уже подготовлены в setUpTestData
+
+        # Act
         response = self.reader_client.post(
             self.edit_url,
             data=self.form_data,
         )
-        self.assertEqual(
-            response.status_code,
-            HTTPStatus.NOT_FOUND,
-        )
+
+        # Assert
+        self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
         self.note.refresh_from_db()
-        self.assertEqual(
-            self.note.title,
-            self.NOTE_TITLE,
-        )
-        self.assertEqual(
-            self.note.text,
-            self.NOTE_TEXT,
-        )
+        self.assertEqual(self.note.title, self.NOTE_TITLE)
+        self.assertEqual(self.note.text, self.NOTE_TEXT)
