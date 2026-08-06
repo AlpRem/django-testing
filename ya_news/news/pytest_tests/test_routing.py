@@ -6,14 +6,17 @@ import pytest
 from pytest_django.asserts import assertRedirects
 
 
-def test_home_page(client, news, home):
-    """Тест адресации домашний страницы"""
-    response = client.get(home)
+HOME_URL = reverse("news:home")
+LOGOUT_URL = reverse("users:logout")
+
+def test_home_page(client, news):
+    """Главная страница доступна для всех пользователей."""
+    response = client.get(HOME_URL)
     assert response.status_code == HTTPStatus.OK
 
 
 def test_detail_page(client, news, detail):
-    """Тест адресации детализации новости"""
+    """Страница новости доступна для всех пользователей."""
     response = client.get(detail)
     assert response.status_code == HTTPStatus.OK
 
@@ -39,7 +42,7 @@ def test_availability_for_comment_edit_and_delete(
     name,
     comment,
 ):
-    """Тест адресации удаления и редактирования комментария"""
+    """Редактирование и удаление комментария доступны только автору."""
     test_client = request.getfixturevalue(client_fixture)
     url = reverse(name, args=(comment.id,))
     response = test_client.get(url)
@@ -58,7 +61,7 @@ def test_redirect_for_anonymous_client(
     comment,
     name,
 ):
-    """Тест редеректа для анонимного пользователя"""
+    """Анонимный пользователь перенаправляется на страницу входа."""
     login_url = reverse("users:login")
     url = reverse(name, args=(comment.id,))
     redirect_url = f"{login_url}?next={url}"
@@ -74,13 +77,13 @@ def test_redirect_for_anonymous_client(
     ],
 )
 def test_auth_pages(client, name):
-    """Тест адресации авторизации"""
+    """Страницы входа и регистрации доступны для всех пользователей."""
     url = reverse(name)
     response = client.get(url)
     assert response.status_code == HTTPStatus.OK
 
 
-def test_logout_page(client, logout):
-    """Тест адресации разлогирования"""
-    response = client.post(logout)
+def test_logout_page(client):
+    """Страница выхода доступна для всех пользователей."""
+    response = client.post(LOGOUT_URL)
     assert response.status_code == HTTPStatus.OK

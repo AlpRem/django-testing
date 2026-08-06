@@ -93,15 +93,5 @@ def delete_url(comment):
 
 
 @pytest.fixture
-def home():
-    return reverse("news:home")
-
-
-@pytest.fixture
 def detail(news):
     return reverse("news:detail", args=(news.id,))
-
-
-@pytest.fixture
-def logout():
-    return reverse("users:logout")
