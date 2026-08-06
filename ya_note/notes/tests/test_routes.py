@@ -93,7 +93,11 @@ class TestRoutes(BaseTestCase):
 
         # Act & Assert
         for client, url, expected_status in self.get_pages_detail_access():
-            with self.subTest(url=url):
+            with self.subTest(
+                    client=client,
+                    url=url,
+                    expected_status=expected_status,
+            ):
                 response = client.get(url)
                 self.assertEqual(
                     response.status_code,
