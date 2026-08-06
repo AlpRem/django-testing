@@ -11,13 +11,23 @@ LOGOUT_URL = reverse("users:logout")
 
 def test_home_page(client, news):
     """Главная страница доступна для всех пользователей."""
+    # Arrange - данные уже подготовлены через фикстуры
+
+    # Act
     response = client.get(HOME_URL)
+
+    # Assert
     assert response.status_code == HTTPStatus.OK
 
 
 def test_detail_page(client, news, detail):
     """Страница новости доступна для всех пользователей."""
+    # Arrange - данные уже подготовлены через фикстуры
+
+    # Act
     response = client.get(detail)
+
+    # Assert
     assert response.status_code == HTTPStatus.OK
 
 
@@ -43,9 +53,14 @@ def test_availability_for_comment_edit_and_delete(
     comment,
 ):
     """Редактирование и удаление комментария доступны только автору."""
+    # Arrange
     test_client = request.getfixturevalue(client_fixture)
     url = reverse(name, args=(comment.id,))
+
+    # Act
     response = test_client.get(url)
+
+    # Assert
     assert response.status_code == expected_status
 
 
@@ -62,10 +77,15 @@ def test_redirect_for_anonymous_client(
     name,
 ):
     """Анонимный пользователь перенаправляется на страницу входа."""
+    # Arrange
     login_url = reverse("users:login")
     url = reverse(name, args=(comment.id,))
     redirect_url = f"{login_url}?next={url}"
+
+    # Act
     response = client.get(url)
+
+    # Assert
     assertRedirects(response, redirect_url)
 
 
@@ -78,12 +98,22 @@ def test_redirect_for_anonymous_client(
 )
 def test_auth_pages(client, name):
     """Страницы входа и регистрации доступны для всех пользователей."""
+    # Arrange
     url = reverse(name)
+
+    # Act
     response = client.get(url)
+
+    # Assert
     assert response.status_code == HTTPStatus.OK
 
 
 def test_logout_page(client):
     """Страница выхода доступна для всех пользователей."""
+    # Arrange - URL уже подготовлен в константе
+
+    # Act
     response = client.post(LOGOUT_URL)
+
+    # Assert
     assert response.status_code == HTTPStatus.OK
