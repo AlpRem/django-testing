@@ -9,23 +9,25 @@ from pytest_django.asserts import assertRedirects
 HOME_URL = reverse("news:home")
 LOGOUT_URL = reverse("users:logout")
 
-def test_home_page(client, news):
-    """Главная страница доступна для всех пользователей."""
-    # Arrange - данные уже подготовлены через фикстуры
+
+@pytest.mark.parametrize(
+    "public_url",
+    [
+        "home_url",
+        "detail",
+    ],
+)
+def test_public_pages(client, news, request, public_url):
+    """Страницы новости и главна доступны всем пользователям."""
+    # Arrange
+    url = (
+        HOME_URL
+        if public_url == "home_url"
+        else request.getfixturevalue(public_url)
+    )
 
     # Act
-    response = client.get(HOME_URL)
-
-    # Assert
-    assert response.status_code == HTTPStatus.OK
-
-
-def test_detail_page(client, news, detail):
-    """Страница новости доступна для всех пользователей."""
-    # Arrange - данные уже подготовлены через фикстуры
-
-    # Act
-    response = client.get(detail)
+    response = client.get(url)
 
     # Assert
     assert response.status_code == HTTPStatus.OK
