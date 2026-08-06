@@ -31,27 +31,21 @@ class TestNoteList(BaseTestCase):
 
     def test_access_author_notes(self):
         response = self.author_client.get(reverse("notes:list"))
-        object_list = response.context["object_list"]
-        self.assertEqual(
-            object_list.count(),
-            self.NOTES_COUNT_ON_LIST_PAGE
+
+        self.assertQuerySetEqual(
+            response.context["object_list"].order_by("pk"),
+            self.author_notes,
+            ordered=True,
         )
-        for note in self.author_notes:
-            self.assertIn(note, object_list)
-        for note in self.reader_notes:
-            self.assertNotIn(note, object_list)
 
     def test_not_access_reader_notes(self):
         response = self.reader_client.get(reverse("notes:list"))
-        object_list = response.context["object_list"]
-        self.assertEqual(
-            object_list.count(),
-            self.NOTES_COUNT_ON_LIST_PAGE
+
+        self.assertQuerySetEqual(
+            response.context["object_list"].order_by("pk"),
+            self.reader_notes,
+            ordered=True,
         )
-        for note in self.reader_notes:
-            self.assertIn(note, object_list)
-        for note in self.author_notes:
-            self.assertNotIn(note, object_list)
 
 
 class TestNotePages(BaseTestCase):
