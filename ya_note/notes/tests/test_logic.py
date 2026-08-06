@@ -79,7 +79,8 @@ class TestNoteCreation(BaseTestCase):
         # Assert
         self.assertFormError(
             response.context["form"],
-            "slug", errors="slug" + WARNING
+            "slug",
+            errors=f"slug{WARNING}",
         )
         self.assertEqual(Note.objects.count(), 1)
 
