@@ -1,7 +1,8 @@
 import pytest
-from django.conf import settings
-from news.forms import CommentForm
 
+from django.conf import settings
+
+from news.forms import CommentForm
 
 @pytest.mark.usefixtures("news_list")
 def test_news_count(client, home):
