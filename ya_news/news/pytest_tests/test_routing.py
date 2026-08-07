@@ -2,29 +2,23 @@ from http import HTTPStatus
 
 import pytest
 from django.urls import reverse
+from news.pytest_tests.urls import HOME_URL, LOGOUT_URL
 from pytest_django.asserts import assertRedirects
 
-from ya_news.news.pytest_tests.urls import HOME_URL, LOGOUT_URL
 
-
-@pytest.mark.parametrize(
-    "public_url",
-    [
-        "home_url",
-        "detail",
-    ],
-)
-def test_public_pages(client, news, request, public_url):
-    """Страницы новости и главна доступны всем пользователям."""
-    # Arrange
-    url = (
-        HOME_URL
-        if public_url == "home_url"
-        else request.getfixturevalue(public_url)
-    )
-
+def test_home_pages(client, news):
+    """Главная страница доступна анонимному пользователю."""
     # Act
-    response = client.get(url)
+    response = client.get(HOME_URL)
+
+    # Assert
+    assert response.status_code == HTTPStatus.OK
+
+
+def test_detail_pages(client, detail):
+    """Страница новости доступна анонимному пользователю."""
+    # Act
+    response = client.get(detail)
 
     # Assert
     assert response.status_code == HTTPStatus.OK

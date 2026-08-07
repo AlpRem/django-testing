@@ -1,9 +1,7 @@
 import pytest
 from django.conf import settings
-from django.urls import reverse
 from news.forms import CommentForm
-
-from ya_news.news.pytest_tests.urls import HOME_URL
+from news.pytest_tests.urls import HOME_URL
 
 
 @pytest.mark.usefixtures("news_list")
