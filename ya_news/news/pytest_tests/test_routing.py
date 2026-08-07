@@ -4,8 +4,7 @@ import pytest
 from django.urls import reverse
 from pytest_django.asserts import assertRedirects
 
-HOME_URL = reverse("news:home")
-LOGOUT_URL = reverse("users:logout")
+from ya_news.news.pytest_tests.urls import HOME_URL, LOGOUT_URL
 
 
 @pytest.mark.parametrize(
