@@ -30,7 +30,7 @@ class TestNoteList(BaseTestCase):
 
     def test_access_author_notes(self):
         """Автор видит только свои заметки на странице списка."""
-        # Arrange - данные уже подготовлены в setUpTestData
+        # Arrange
         url = reverse("notes:list")
 
         # Act
@@ -45,7 +45,7 @@ class TestNoteList(BaseTestCase):
 
     def test_not_access_reader_notes(self):
         """Читатель видит только свои заметки на странице списка."""
-        # Arrange - данные уже подготовлены в setUpTestData
+        # Arrange
         url = reverse("notes:list")
 
         # Act

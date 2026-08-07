@@ -9,8 +9,6 @@ from ya_news.news.pytest_tests.urls import HOME_URL
 @pytest.mark.usefixtures("news_list")
 def test_news_count(client):
     """Количество новостей на главной не превышает лимит."""
-    # Arrange - данные уже подготовлены через фикстуру news_list
-
     # Act
     response = client.get(HOME_URL)
     object_list = response.context["object_list"]
@@ -22,8 +20,6 @@ def test_news_count(client):
 @pytest.mark.usefixtures("news_list")
 def test_news_order(client):
     """Новости на главной сортируются от новых к старым."""
-    # Arrange - данные уже подготовлены через фикстуру news_list
-
     # Act
     response = client.get(HOME_URL)
     object_list = response.context["object_list"]
@@ -36,8 +32,6 @@ def test_news_order(client):
 @pytest.mark.usefixtures("comments")
 def test_comments_order(client, news, detail):
     """Комментарии к новости сортируются от новых к старым."""
-    # Arrange - данные уже подготовлены через фикстуру comments
-
     # Act
     response = client.get(detail)
     news_object = response.context["news"]
@@ -50,8 +44,6 @@ def test_comments_order(client, news, detail):
 
 def test_anonymous_client_has_no_form(client, news, detail):
     """Анонимный пользователь не видит форму комментария."""
-    # Arrange - данные уже подготовлены через фикстуры
-
     # Act
     response = client.get(detail)
 

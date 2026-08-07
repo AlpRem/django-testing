@@ -109,8 +109,6 @@ def test_auth_pages(client, name):
 
 def test_logout_page(client):
     """Страница выхода доступна для всех пользователей."""
-    # Arrange - URL уже подготовлен в константе
-
     # Act
     response = client.post(LOGOUT_URL)
 
