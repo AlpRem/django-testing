@@ -1,10 +1,7 @@
 import pytest
-
 from django.conf import settings
 from django.urls import reverse
-
 from news.forms import CommentForm
-
 
 HOME_URL = reverse("news:home")
 
