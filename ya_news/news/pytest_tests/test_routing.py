@@ -2,8 +2,9 @@ from http import HTTPStatus
 
 import pytest
 from django.urls import reverse
-from news.pytest_tests.urls import HOME_URL, LOGOUT_URL
 from pytest_django.asserts import assertRedirects
+
+from news.pytest_tests.urls import HOME_URL, LOGOUT_URL
 
 
 def test_home_pages(client, news):
