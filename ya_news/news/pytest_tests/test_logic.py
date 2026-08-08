@@ -22,10 +22,10 @@ def test_user_can_create_comment(author_client, author, news, detail):
     form_data = {"text": COMMENT_TEXT}
 
     response = author_client.post(detail, data=form_data)
+    comment = Comment.objects.get()
 
     assertRedirects(response, f"{detail}#comments")
     assert Comment.objects.count() == 1
-    comment = Comment.objects.get()
     assert comment.text == COMMENT_TEXT
     assert comment.news == news
     assert comment.author == author
