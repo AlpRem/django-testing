@@ -4,19 +4,25 @@ import pytest
 from django.urls import reverse
 from pytest_django.asserts import assertRedirects
 
-from news.pytest_tests.urls import HOME_URL, LOGOUT_URL
+from news.pytest_tests.urls import HOME_URL, LOGIN_URL, LOGOUT_URL, SIGNUP_URL
 
 
-def test_home_pages(client, news):
-    """Главная страница доступна анонимному пользователю."""
-    # Act
-    response = client.get(HOME_URL)
+@pytest.mark.parametrize(
+    "url",
+    [
+        HOME_URL,
+        LOGIN_URL,
+        SIGNUP_URL
+    ],
+)
+def test_public_pages(client, news, url):
+    """Главная страница и страницы авторизации доступны всем."""
+    response = client.get(url)
 
-    # Assert
     assert response.status_code == HTTPStatus.OK
 
 
-def test_detail_pages(client, detail):
+def test_detail_page(client, detail):
     """Страница новости доступна анонимному пользователю."""
     response = client.get(detail)
 
@@ -66,33 +72,18 @@ def test_redirect_for_anonymous_client(
     name,
 ):
     """Анонимный пользователь перенаправляется на страницу входа."""
-    login_url = reverse("users:login")
     url = reverse(name, args=(comment.id,))
-    redirect_url = f"{login_url}?next={url}"
+    redirect_url = f"{LOGIN_URL}?next={url}"
 
     response = client.get(url)
 
     assertRedirects(response, redirect_url)
 
 
-@pytest.mark.parametrize(
-    "name",
-    [
-        "users:login",
-        "users:signup",
-    ],
-)
-def test_auth_pages(client, name):
-    """Страницы входа и регистрации доступны для всех пользователей."""
-    url = reverse(name)
-
-    response = client.get(url)
-
-    assert response.status_code == HTTPStatus.OK
-
-
 def test_logout_page(client):
     """Страница выхода доступна для всех пользователей."""
+    # Act
     response = client.post(LOGOUT_URL)
 
+    # Assert
     assert response.status_code == HTTPStatus.OK
