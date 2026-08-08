@@ -31,13 +31,10 @@ class TestNoteList(BaseTestCase):
 
     def test_access_author_notes(self):
         """Автор видит только свои заметки на странице списка."""
-        # Arrange
         url = reverse("notes:list")
 
-        # Act
         response = self.author_client.get(url)
 
-        # Assert
         self.assertQuerySetEqual(
             response.context["object_list"].order_by("pk"),
             self.author_notes,
@@ -46,13 +43,10 @@ class TestNoteList(BaseTestCase):
 
     def test_not_access_reader_notes(self):
         """Читатель видит только свои заметки на странице списка."""
-        # Arrange
         url = reverse("notes:list")
 
-        # Act
         response = self.reader_client.get(url)
 
-        # Assert
         self.assertQuerySetEqual(
             response.context["object_list"].order_by("pk"),
             self.reader_notes,
@@ -74,13 +68,11 @@ class TestNotePages(BaseTestCase):
 
     def test_pages_have_form(self):
         """Форма для создания и редактирования заметки доступна автору."""
-        # Arrange
         pages = (
             reverse("notes:add"),
             reverse("notes:edit", args=(self.note.slug,)),
         )
 
-        # Act & Assert
         for url in pages:
             with self.subTest(url=url):
                 response = self.author_client.get(url)
